@@ -57,14 +57,14 @@ def default_classification_model(
             filters=classification_feature_size,
             activation='relu',
             name='pyramid_classification_{}'.format(i),
-            kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+            kernel_initializer=keras.initializers.random_normal(mean=0.0, stddev=0.01, seed=None),
             bias_initializer='zeros',
             **options
         )(outputs)
 
     outputs = keras.layers.Conv2D(
         filters=num_classes * num_anchors,
-        kernel_initializer=keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        kernel_initializer=keras.initializers.random_normal(mean=0.0, stddev=0.01, seed=None),
         bias_initializer=initializers.PriorProbability(probability=prior_probability),
         name='pyramid_classification',
         **options
@@ -99,7 +99,7 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
         'kernel_size'        : 3,
         'strides'            : 1,
         'padding'            : 'same',
-        'kernel_initializer' : keras.initializers.normal(mean=0.0, stddev=0.01, seed=None),
+        'kernel_initializer' : keras.initializers.random_normal(mean=0.0, stddev=0.01, seed=None),
         'bias_initializer'   : 'zeros'
     }
 
@@ -138,7 +138,7 @@ def __create_pyramid_features(C3, C4, C5, radar_layers=None, feature_size=256):
     """
     # update feature size for radar channels
     if radar_layers:
-        num_radar_channels = radar_layers[0]._shape.dims[-1].value
+        num_radar_channels = radar_layers[0].shape.dims[-1].value
         feature_size -=num_radar_channels
 
     # upsample C5 to get P5 from the FPN paper

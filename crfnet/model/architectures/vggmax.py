@@ -17,7 +17,8 @@ import tensorflow.keras as keras
 
 # @keras_modules_injection
 def custom(*args, **kwargs):
-    return vggmax(*args, **kwargs)
+    kw = kwargs
+    return vggmax(*args, **kw)
 
 
 preprocess_input = imagenet_utils.preprocess_input

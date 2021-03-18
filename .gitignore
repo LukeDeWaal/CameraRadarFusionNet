@@ -33,6 +33,7 @@ crfnet/archive/
 crfnet/experiments/
 data/*
 models/*.h5
+/venv/
 
 ############## CONFIG FILES ############
 crfnet/configs/*
@@ -47,3 +48,4 @@ crfnet/configs/neural_filter/*
 !crfnet/tb_logs/.gitkeep 
 !crfnet/saved_models/.gitkeep 
 *.code-workspace
+

@@ -1,3 +1,0 @@
-nuimages
-nuscenes
-tutorials

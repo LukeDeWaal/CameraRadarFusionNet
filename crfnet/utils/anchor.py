@@ -33,10 +33,17 @@ def layer_shapes(image_shape, model):
                 shape[input_name] = (None,) + image_shape
         
 
-    for layer in model.layers[1:]:
+    for idx, layer in enumerate(model.layers[1:]):
         nodes = layer._inbound_nodes
         for node in nodes:
-            inputs = [shape[lr.name] for lr in node.inbound_layers]
+            inputs = []
+            inb_lay = node.inbound_layers
+            try:
+                for lr in inb_lay:
+                    inputs.append(shape[lr.name])
+            except TypeError:
+                inputs.append(shape[inb_lay.name])
+
             if not inputs:
                 continue
             shape[layer.name] = layer.compute_output_shape(inputs[0] if len(inputs) == 1 else inputs)

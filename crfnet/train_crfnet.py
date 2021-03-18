@@ -18,6 +18,8 @@ import sys
 import copy
 import traceback
 
+sys.path.insert(0, "nuscenes-devkit/python-sdk")
+
 # Third party imports
 import tensorflow.keras as keras
 import tensorflow.keras.preprocessing.image
@@ -157,7 +159,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
                 'classification': losses.focal(),
                 'distance'      : losses.smooth_l1(alpha=distance_alpha)
             },
-            optimizer=keras.optimizers.adam(lr=lr, clipnorm=0.001)
+            optimizer=keras.optimizers.Adam(lr=lr, clipnorm=0.001)
         )
     else:
         training_model.compile(
@@ -165,7 +167,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
                 'regression'    : losses.smooth_l1(),
                 'classification': losses.focal(),
             },
-            optimizer=keras.optimizers.adam(lr=lr, clipnorm=0.001)
+            optimizer=keras.optimizers.Adam(lr=lr, clipnorm=0.001)
         )
 
     return model, training_model, prediction_model
@@ -372,8 +374,8 @@ def main():
 
 
     ## Start training
-    training_model.fit_generator(
-        generator=train_generator,
+    training_model.fit(
+        x=train_generator,
         steps_per_epoch=len(train_generator),
         epochs=cfg.epochs,
         validation_data=validation_generator,
