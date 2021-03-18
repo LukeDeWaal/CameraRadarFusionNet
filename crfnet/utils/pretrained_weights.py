@@ -3,8 +3,8 @@ This script provides the information of pretrained weights and downloads them.
 They are safed into /.keras in the home folder and their path is passed as output.
 As we load these models by name, we always include top, whatever this is.
 """
+import tensorflow.keras as keras
 
-import keras.utils 
 
 def get_weights_path(network):    
     

@@ -17,7 +17,7 @@ Original Source: https://github.com/fizyr/keras-retinanet
 """
 
 import numpy as np
-from keras.backend import floatx
+from tensorflow.keras.backend import floatx
 
 
 class AnchorParameters:

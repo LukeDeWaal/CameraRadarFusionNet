@@ -1,5 +1,5 @@
-import keras.callbacks
-import keras
+import tensorflow.keras.callbacks
+import tensorflow.keras as keras
 import numpy as np
 from crfnet.utils.eval import evaluate
 

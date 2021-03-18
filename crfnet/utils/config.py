@@ -25,7 +25,7 @@ import json
 import os 
 
 # 3rd Party
-import keras
+import tensorflow.keras as keras
 import numpy as np
 
 # Local Libraries

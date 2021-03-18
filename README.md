@@ -1,5 +1,4 @@
 # CRF-Net for Object Detection (Camera and Radar Fusion Network)
-![Radar Augmented Image Example](crfnet/images/imageplus_format.png)
 
 This repository provides a neural network for object detection based on camera and radar data. It builds up on the work of [Keras RetinaNet](https://github.com/fizyr/keras-retinanet). 
 The network performs a multi-level fusion of the radar and camera data within the neural network.

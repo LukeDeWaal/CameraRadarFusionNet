@@ -1,11 +1,11 @@
 import math
 from typing import List
 
-import keras
-from keras import backend as K
-from keras import layers
-from keras.models import Model
-from keras.utils import get_file, get_source_inputs
+import tensorflow.keras
+from tensorflow.keras import backend as K
+from tensorflow.keras import layers
+from tensorflow.keras.models import Model
+from tensorflow.keras.utils import get_file, get_source_inputs
 
 from keras_applications.imagenet_utils import _obtain_input_shape
 from keras_applications.imagenet_utils import preprocess_input as _preprocess
@@ -15,7 +15,7 @@ from .custom_objects import EfficientNetConvInitializer
 from .custom_objects import EfficientNetDenseInitializer
 from .custom_objects import Swish, DropConnect
 
-from keras.utils import get_file
+from tensorflow.keras.utils import get_file
 from . import retinanet
 from . import Backbone
 from crfnet.utils.image import preprocess_image

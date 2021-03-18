@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
+import tensorflow.keras as keras
 from crfnet.model import initializers
 from .. import layers
 from crfnet.utils.anchor_parameters import AnchorParameters

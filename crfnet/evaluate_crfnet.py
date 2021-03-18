@@ -20,8 +20,7 @@ import os
 import sys
 
 # Third party imports
-
-import keras.preprocessing.image
+import tensorflow.keras as keras
 import numpy as np
 import matplotlib.pyplot as plt 
 import pickle

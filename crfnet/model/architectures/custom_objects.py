@@ -1,10 +1,10 @@
 import re
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
-from keras import initializers
-from keras import layers
-from keras.utils.generic_utils import get_custom_objects
+from tensorflow.keras import backend as K
+from tensorflow.keras import initializers
+from tensorflow.keras import layers
+from tensorflow.keras.utils.generic_utils import get_custom_objects
 
 
 # Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py

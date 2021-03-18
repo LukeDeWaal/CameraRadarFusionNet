@@ -8,11 +8,11 @@ from keras_applications import imagenet_utils
 from keras_applications.imagenet_utils import decode_predictions
 from keras_applications.imagenet_utils import _obtain_input_shape
 from keras_applications import vgg16
-from keras.applications import keras_modules_injection
-from keras.backend import concatenate, shape
-from keras.layers import Lambda, Concatenate
-import keras.backend as K
-import keras
+from tensorflow.keras.applications import keras_modules_injection
+from tensorflow.keras.backend import concatenate, shape
+from tensorflow.keras.layers import Lambda, Concatenate
+import tensorflow.keras.backend as K
+import tensorflow.keras as keras
 
 @keras_modules_injection
 def custom(*args, **kwargs):

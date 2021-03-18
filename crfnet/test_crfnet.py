@@ -26,8 +26,8 @@ import warnings
 from datetime import datetime
 
 # Third party imports
-import keras
-import keras.preprocessing.image
+import tensorflow.keras as keras
+import tensorflow.keras.preprocessing.image
 import tensorflow as tf
 import progressbar
 import cv2

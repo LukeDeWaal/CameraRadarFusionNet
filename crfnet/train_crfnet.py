@@ -19,8 +19,8 @@ import copy
 import traceback
 
 # Third party imports
-import keras
-import keras.preprocessing.image
+import tensorflow.keras as keras
+import tensorflow.keras.preprocessing.image
 import tensorflow as tf
 
 # Allow relative imports when being executed as script.
@@ -125,7 +125,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     # Keras recommends initialising a multi-gpu model on the CPU to ease weight sharing, and to prevent OOM errors.
     # optionally wrap in a parallel model
     if multi_gpu > 1:
-        from keras.utils import multi_gpu_model
+        from tensorflow.keras.utils import multi_gpu_model
         
         with tf.device('/cpu:0'):
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier, inputs=inputs, distance=distance), weights=weights, skip_mismatch=True, config=copy.deepcopy(cfg), num_classes=num_classes)
@@ -136,7 +136,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         training_model = model
 
     try:
-        from keras.utils import plot_model
+        from tensorflow.keras.utils import plot_model
         # Write the keras model plot into a file
         plot_path = os.path.join(cfg.tb_logdir, cfg.model_name)
         makedirs(plot_path)

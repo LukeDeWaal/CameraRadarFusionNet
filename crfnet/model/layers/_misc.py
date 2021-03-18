@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 # 3rd Party Libraries
-import keras
+import tensorflow.keras as keras
 import numpy as np
 
 # Custom imports

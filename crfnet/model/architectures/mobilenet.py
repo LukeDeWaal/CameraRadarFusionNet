@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
-from keras.applications import mobilenet
-from keras.utils import get_file
+import tensorflow.keras as keras
+from tensorflow.keras.applications import mobilenet
+from tensorflow.keras.utils import get_file
 from crfnet.utils.image import preprocess_image
 
 from . import retinanet

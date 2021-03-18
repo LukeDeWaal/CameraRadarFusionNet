@@ -17,7 +17,7 @@ limitations under the License.
 from .anchor_calc import compute_overlap
 from .visualization import draw_detections, draw_annotations
 from crfnet.data_processing.fusion.fusion_projection_lines import create_imagep_visualization
-import keras
+import tensorflow.keras as keras
 import numpy as np
 import os
 import time

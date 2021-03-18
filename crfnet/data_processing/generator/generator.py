@@ -20,7 +20,7 @@ import numpy as np
 import random
 import warnings
 
-import keras
+import tensorflow.keras as keras
 
 from crfnet.utils.anchor import (
     anchors_for_shape,

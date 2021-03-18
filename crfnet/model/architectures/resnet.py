@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
-from keras.utils import get_file
-import keras_resnet
-import keras_resnet.models
+import tensorflow.keras as keras
+from tensorflow.keras.utils import get_file
+import tensorflow.keras.applications.resnet as keras_resnet
+import tensorflow.keras.models as models
 
 from . import retinanet
 from . import Backbone
