@@ -7,7 +7,7 @@ import numpy as np
 
 from .anchor_parameters import AnchorParameters
 from .anchor_calc import compute_overlap
-from tensorflow.keras.utils.generic_utils import to_list
+from tensorflow.python.keras.utils.generic_utils import to_list
 
 def layer_shapes(image_shape, model):
     """Compute layer shapes given input image shape and the model.

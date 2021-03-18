@@ -97,14 +97,14 @@ def get_session(gpu_usage=None):
     """
 
     if gpu_usage:
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_usage, \
+        gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=gpu_usage, \
         allow_growth=True)
     else:
-        gpu_options = tf.GPUOptions(allow_growth=True)
+        gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
         
-    config = tf.ConfigProto(gpu_options=gpu_options)
+    config = tf.compat.v1.ConfigProto(gpu_options=gpu_options)
     
-    return tf.Session(config=config)
+    return tf.compat.v1.Session(config=config)
 
 
 def output_index_by_name(model, output_name):

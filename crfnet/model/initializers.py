@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+import tensorflow as tf
 import tensorflow.keras as keras
 
 import numpy as np
@@ -34,6 +34,6 @@ class PriorProbability(keras.initializers.Initializer):
 
     def __call__(self, shape, dtype=None):
         # set bias to -log((1 - p)/p) for foreground
-        result = np.ones(shape, dtype=dtype) * -math.log((1 - self.probability) / self.probability)
+        result = tf.ones(shape, dtype=dtype) * -math.log((1 - self.probability) / self.probability)
 
         return result

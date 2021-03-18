@@ -261,7 +261,7 @@ def main():
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default=os.path.join(FILE_DIRECTORY,"configs/local.cfg"))
+    parser.add_argument('--config', type=str, default=os.path.join(FILE_DIRECTORY,"configs/default.cfg"))
     args = parser.parse_args()
 
     if not os.path.exists(args.config):
@@ -289,7 +289,7 @@ def main():
     # optionally choose specific GPU
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.gpu
 
-    keras.backend.tensorflow_backend.set_session(get_session(cfg.gpu_mem_usage))
+    tf.compat.v1.keras.backend.set_session(get_session(cfg.gpu_mem_usage))
 
     # create the generators
     if 'nuscenes' in cfg.data_set:

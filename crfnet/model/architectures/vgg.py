@@ -17,6 +17,7 @@ limitations under the License.
 #todo: @Max purpose of vgg and vgg_max scripts? Unify scripts?
 import tensorflow.keras as keras
 from tensorflow.keras.utils import get_file
+from keras_applications import vgg16, vgg19
 
 from . import retinanet
 from . import Backbone
@@ -38,13 +39,13 @@ class VGGBackbone(Backbone):
         Weights can be downloaded at https://github.com/fizyr/keras-models/releases .
         """
         if self.backbone == 'vgg16':
-            resource = keras.applications.vgg16.vgg16.WEIGHTS_PATH_NO_TOP
+            resource = vgg16.WEIGHTS_PATH_NO_TOP
             checksum = '6d6bbae143d832006294945121d1f1fc'
         elif 'vgg-max' in self.backbone:
-            resource = keras.applications.vgg16.vgg16.WEIGHTS_PATH_NO_TOP
+            resource = vgg16.WEIGHTS_PATH_NO_TOP
             checksum = '6d6bbae143d832006294945121d1f1fc'
         elif self.backbone == 'vgg19':
-            resource = keras.applications.vgg19.vgg19.WEIGHTS_PATH_NO_TOP
+            resource = vgg19.WEIGHTS_PATH_NO_TOP
             checksum = '253f8cb515780f3b799900260a226db6'
         else:
             raise ValueError("Backbone '{}' not recognized.".format(self.backbone))

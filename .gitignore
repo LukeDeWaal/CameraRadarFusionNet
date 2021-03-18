@@ -31,6 +31,8 @@ crfnet/data/tools/anchor_data/
 crfnet/build/
 crfnet/archive/
 crfnet/experiments/
+data/*
+models/*.h5
 
 ############## CONFIG FILES ############
 crfnet/configs/*
