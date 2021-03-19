@@ -10,8 +10,9 @@ The network can be tested on the [nuScenes](https://www.nuscenes.org/) dataset, 
 ## Requirements
 - Linux Ubuntu (tested on version 18.04)
 - CUDA 11.0
-- Python 3.7
+- Anaconda Python 3.7
 - PyTorch 1.7.1
+- [Nuscenes Devkit for Conda](https://github.com/LukeDeWaal/nuscenes_devkit) 
 
 
 # CRF-Net Usage
