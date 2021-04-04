@@ -6,8 +6,6 @@ from models.utils.config import get_config
 from models.architectures.vggmax import VGGmax
 
 
-
-
 if __name__ == "__main__":
     FILE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,7 +25,6 @@ if __name__ == "__main__":
 
     assert cfg.inference is False, "You are running a training in inference mode. Please check your config!"
 
-    x = torch.randn(3, 5, 200, 200)
-    model = VGGmax(cfg=cfg)
-    print(model)
-    model(x)
+    x = torch.randn(10, 5, 239, 239)
+    VGG = VGGmax(input_shape=(5, 239, 239), cfg=cfg)
+    output = VGG(x)
