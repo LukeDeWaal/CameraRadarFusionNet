@@ -3,7 +3,7 @@ import argparse
 import torch
 
 from models.utils.config import get_config
-from models.architectures.vggmax import VGGmax
+from src.model.architectures.vggmax import VGGmax
 
 
 if __name__ == "__main__":
