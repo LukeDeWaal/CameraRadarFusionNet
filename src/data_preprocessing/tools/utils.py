@@ -1,19 +1,11 @@
-import os
-import os.path as osp
-import sys
-import math
-import time
-
 # 3rd party libraries
 import cv2
-import json
 import numpy as np
 from pyquaternion import Quaternion
-from PIL import Image
-from nuscenes.utils.data_classes import PointCloud, RadarPointCloud, LidarPointCloud
-import radar
-from ProcRadarPointCloud import ProcRadarPointCloud, ProcEndRadarPointCloud
-from radar2cam import radar2cam
+from nuscenes.utils.data_classes import RadarPointCloud
+from .radar import *
+from .ProcRadarPointCloud import ProcRadarPointCloud, ProcEndRadarPointCloud
+from .radar2cam import radar2cam
 
 
 def _resize_image(image_data, target_shape):
@@ -581,13 +573,13 @@ def create_imagep_visualization(image_plus_data, color_channel="distance", \
                 which channel shall be used for colorization")
             radar_img = np.zeros(image_plus_data.shape[:-1])  # we expect the channel index to be the last axis
         else:
-            available_channels = {radar.channel_map[ch]: ch_idx for ch_idx, ch in enumerate(cfg.channels) if ch > 2}
+            available_channels = {channel_map[ch]: ch_idx for ch_idx, ch in enumerate(cfg.channels) if ch > 2}
             ch_idx = available_channels[color_channel]
             # Normalize the radar
             if cfg.normalize_radar:  # normalization happens from -127 to 127
                 radar_img = image_plus_data[..., ch_idx] + 127.5
             else:
-                radar_img = radar.normalize(color_channel, image_plus_data[..., ch_idx],
+                radar_img = normalize(color_channel, image_plus_data[..., ch_idx],
                                             normalization_interval=[0, 255], sigma_factor=2)
 
             radar_img = np.clip(radar_img, 0, 255)

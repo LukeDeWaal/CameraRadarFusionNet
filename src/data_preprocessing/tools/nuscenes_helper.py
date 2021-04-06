@@ -2,8 +2,6 @@
 # coding: utf-8
 
 # Standard libraries
-import sys
-import os
 import os.path as osp
 
 # 3rd party libraries
@@ -13,9 +11,9 @@ from pyquaternion import Quaternion
 
 # Local libraries
 import nuscenes
-from nuscenes.utils.data_classes import RadarPointCloud, Box
-from nuscenes.utils.geometry_utils import box_in_image, view_points, BoxVisibility
-import radar
+from nuscenes.utils.data_classes import RadarPointCloud
+from nuscenes.utils.geometry_utils import box_in_image
+from .radar import *
 
 
 #todo deprecated, delete when radar_generator.py is updated
@@ -110,7 +108,7 @@ def get_sensor_sample_data(nusc, sample, sensor_channel, dtype=np.float32, size=
     if "RADAR" in sensor_channel:
         pc = RadarPointCloud.from_file(file_name)  # Load radar points
         data = pc.points.astype(dtype)
-        data = radar.enrich_radar_data(data) # enrich the radar data an bring them into proper format
+        data = enrich_radar_data(data) # enrich the radar data an bring them into proper format
     elif "CAM" in sensor_channel:
         i = Image.open(file_name)
 

@@ -3,14 +3,12 @@ import warnings
 
 import numpy as np
 import cv2
-from typing import List, Union
-import progressbar
+from typing import Union
 import random
 import time as tm
-import torch
 from nuscenes.utils.data_classes import Box
-from torch.utils.data import DataLoader, Dataset
-from visualization import draw_boxes
+from torch.utils.data import Dataset
+from data_preprocessing.tools.visualization import draw_boxes
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -21,22 +19,16 @@ pyximport.install()
 
 from nuscenes_devkit.nuscenes import NuScenes, RadarPointCloud
 
-from anchor import guess_shapes, anchors_for_shape, compute_gt_annotations
-from anchor_calc import anchor_targets_bbox
-from nuscenes_helper import calc_mask, get_sensor_sample_data
-from nuscenes.utils.geometry_utils import box_in_image, view_points, BoxVisibility, points_in_box
-from utils import imageplus_creation, create_spatial_point_array, noisy, create_imagep_visualization
-from config import get_config
+from data_preprocessing.tools.anchor import guess_shapes, anchors_for_shape, compute_gt_annotations
+from data_preprocessing.tools.anchor_calc import anchor_targets_bbox
+from data_preprocessing.tools.nuscenes_helper import calc_mask, get_sensor_sample_data
+from nuscenes.utils.geometry_utils import box_in_image, BoxVisibility, points_in_box
+from data_preprocessing.tools.utils import imageplus_creation, create_spatial_point_array, noisy, create_imagep_visualization
 from defines import *
-from data_pipeline import preprocess_image, TransformParameters, preprocess_image_inverted, adjust_transform_for_image, \
+from data_preprocessing.tools.data_pipeline import preprocess_image, TransformParameters, preprocess_image_inverted, adjust_transform_for_image, \
     apply_transform, resize_image
-from transform import random_transform_generator, transform_aabb
-import radar
-
-
-cfg = get_config(os.path.join(CONFIG_DIR, 'default.cfg'))
-
-
+from data_preprocessing.tools.transform import random_transform_generator, transform_aabb
+from data_preprocessing.tools import radar
 
 
 class NuscenesDataset(Dataset):
@@ -83,14 +75,17 @@ class NuscenesDataset(Dataset):
                  distance=False,
                  radar_projection_height=3,
                  anchor_params=None,
+                 verbose=False,
+                 timer=False,
                  *args,
                  **kwargs
                  ):
 
+        print("Dataset Initialization :", end='')
         t1 = tm.time()
         self.version = version
         self.data_root = data_root
-        self.nusc = NuScenes(version=self.version, dataroot=self.data_root, **kwargs)
+        self.nusc = NuScenes(version=self.version, dataroot=self.data_root, verbose=False, **kwargs)
         self.cam_sensor = cam_sensor
         self.radar_sensor = radar_input_name
 
@@ -116,6 +111,7 @@ class NuscenesDataset(Dataset):
         self.cartesian_uncertainty = (0, 0, 0)  # meters
         self.angular_uncertainty = 0.0  # degree
         self.inference = inference
+        self.timer = timer
 
         self.image_min_side = image_min_side
         self.image_max_side = image_max_side
@@ -187,6 +183,8 @@ class NuscenesDataset(Dataset):
         self.radar_projection_height = radar_projection_height
         self.anchor_params = anchor_params
 
+        self.verbose = verbose
+
         # Define groups
         self.group_images()
 
@@ -196,7 +194,8 @@ class NuscenesDataset(Dataset):
 
         t2 = tm.time()
         dt = t2 - t1
-        print(f"Dataset Initialization : {dt} s")
+        print(f" {dt} s")
+
 
     def __len__(self):
         return len(self.groups)
@@ -210,8 +209,15 @@ class NuscenesDataset(Dataset):
         t1 = tm.time()
         group = self.groups[idx]
         inputs, targets = self.compute_input_output(group, inference=self.inference)
+        if self.batch_size == 1:
+            inputs = inputs[0, ...]
+            targets = [t[0, ...] for t in targets]
         t2 = tm.time()
-        print(f"Data Item Retrieval: {t2-t1} s")
+        dt = t2-t1
+        #if self.verbose: print(f"Data Item Retrieval: {t2-t1} s")
+        if self.timer:
+            print(round(dt, 5), "[s]", end='')
+
         return inputs, targets
 
     def on_epoch_end(self):
@@ -607,6 +613,7 @@ class NuscenesDataset(Dataset):
                         annotations_count += 1
                 else:
                     # The current name has been ignored
+                    # print(f"[SKIP] {sample_token}")
                     pass
 
         annotations['labels'] = np.array(annotations['labels'])
@@ -695,7 +702,7 @@ class NuscenesDataset(Dataset):
                 image_group, annotations_group = self.filter_annotations(image_group, annotations_group, group)
 
             # randomly transform data
-            image_group, annotations_group = self.random_transform_group(image_group, annotations_group)
+            #image_group, annotations_group = self.random_transform_group(image_group, annotations_group)
 
         # perform preprocessing steps
         image_group, annotations_group = self.preprocess_group(image_group, annotations_group)
@@ -710,19 +717,19 @@ class NuscenesDataset(Dataset):
             targets = None
 
 
-        if self.radar_input_name:
-            # Load radar data
-            radar_input_batch = []
-            for sample_index in group:
-                radar_array = self.load_radar_array(sample_index, target_width=self.radar_width)
-                radar_input_batch.append(radar_array)
-
-            radar_input_batch = np.array(radar_input_batch)
-
-            inputs = (
-                inputs,
-                radar_input_batch
-            )
+        # if self.radar_input_name:
+        #     # Load radar data
+        #     radar_input_batch = []
+        #     for sample_index in group:
+        #         radar_array = self.load_radar_array(sample_index, target_width=self.radar_width)
+        #         radar_input_batch.append(radar_array)
+        #
+        #     radar_input_batch = np.array(radar_input_batch)
+        #
+        #     tmp_inputs = (
+        #         inputs,
+        #         radar_input_batch
+        #     )
 
         return inputs, targets
 
@@ -739,7 +746,7 @@ class NuscenesDataset(Dataset):
             image = apply_transform(transform, image, self.transform_parameters)
 
             # Transform the bounding boxes in the annotations.
-            annotations['bboxes'] = annotations['bboxes'].copy()
+            # annotations['bboxes'] = annotations['bboxes'].copy()
             for index in range(annotations['bboxes'].shape[0]):
                 annotations['bboxes'][index, :] = transform_aabb(transform, annotations['bboxes'][index, :])
 
@@ -896,31 +903,35 @@ if __name__ == "__main__":
         'vehicle.truck': np.array([89, 51, 0])/255,
         }
 
-    data_generator = NuscenesDataset(r"v1.0-mini", EXT_MINI_DIR, 'CAM_FRONT', radar_input_name='RADAR_FRONT',
+    data_generator = NuscenesDataset(r"v1.0-trainval", EXT_FULL_DIR, 'CAM_FRONT',
+                                     radar_input_name='RADAR_FRONT',
                                      scene_indices=None,
                                      category_mapping=cfg.category_mapping,
-                                     transform_generator=None,
+                                     transform_generator=transform_generator,
                                      shuffle_groups=False,
                                      compute_anchor_targets=anchor_targets_bbox,
                                      compute_shapes=guess_shapes,
-                                     verbose=False,
+                                     verbose=True,
+                                     threading=False,
                                      **common_args)
+
 
     bboxes = True
     debug = True
+    visual = False
 
-    i = 1
-    while i < len(data_generator):
-        #print("Sample ", i)
-
+    shitty_data = []
+    i = 10
+    while i < 60:#len(data_generator):
+        print("Sample: ", i)
         # Get the data
         inputs, targets = data_generator[i]
         img = inputs[0] if isinstance(inputs, tuple) else inputs
 
         assert img.shape[0] == data_generator.batch_size
-        img = img[0,...]
+        img = img[0, ...]
         img = preprocess_image_inverted(img)
-        ann = data_generator.load_annotations(i)
+        ann = data_generator.load_annotations_group(data_generator.groups[i])
 
         assert img.shape[0] == common_args['image_min_side']
         assert img.shape[1] == common_args['image_max_side']
@@ -936,56 +947,80 @@ if __name__ == "__main__":
 
         if debug:
             ## Positive Anchor Visualization
-            anchors = anchors_for_shape(viz.shape, anchor_params=common_args['anchor_params'])
-            positive_indices, _, max_indices = compute_gt_annotations(anchors, ann['bboxes'])
-            draw_boxes(viz, anchors[positive_indices], (255, 255, 0), thickness=1)
 
-            ## Data Augmentation
-            #viz, ann = data_generator.random_transform_group_entry(viz, ann)
+            if isinstance(ann, list):
+                for j, a in enumerate(ann):
+                    if bool(sum([np.sum(v) for v in a.values()])):
+                        anchors = anchors_for_shape(viz.shape, anchor_params=common_args['anchor_params'])
+                        positive_indices, _, max_indices = compute_gt_annotations(anchors, a['bboxes'])
+                        draw_boxes(viz, anchors[positive_indices], (255, 255, 0), thickness=1)
+
+                        ## Data Augmentation
+                        viz, ann[j] = data_generator.random_transform_group_entry(viz, a)
+
+            elif isinstance(ann, dict):
+                if bool(sum([np.sum(v) for v in ann.values()])):
+                    anchors = anchors_for_shape(viz.shape, anchor_params=common_args['anchor_params'])
+                    positive_indices, _, max_indices = compute_gt_annotations(anchors, ann['bboxes'])
+                    draw_boxes(viz, anchors[positive_indices], (255, 255, 0), thickness=1)
+
+                    ## Data Augmentation
+                    viz, ann = data_generator.random_transform_group_entry(viz, ann)
+
 
         if bboxes:
-            for a in range(len(ann['bboxes'])):
-                label_name = data_generator.label_to_name(ann['labels'][a])
-                dist = ann['distances'][a]
+            if isinstance(ann, list):
+                outer_lim = len(ann)
+                anns = ann
+            else:
+                anns = [ann]
+                outer_lim = 1
 
-                if label_name in class_to_color:
-                    color = class_to_color[label_name] * 255
-                else:
-                    color = class_to_color['bg']
+            for k in range(outer_lim):
+                for a in range(len(anns[k]['bboxes'])):
+                    label_name = data_generator.label_to_name(anns[k]['labels'][a])
+                    dist = anns[k]['distances'][a]
 
-                p1 = (int(ann['bboxes'][a][0]), int(ann['bboxes'][a][1]))  # Top left
-                p2 = (int(ann['bboxes'][a][2]), int(ann['bboxes'][a][3]))  # Bottom right
-                cv2.rectangle(viz, p1, p2, color, 1)
+                    if label_name in class_to_color:
+                        color = class_to_color[label_name] * 255
+                    else:
+                        color = class_to_color['bg']
 
-                textLabel = '{0}: {1:3.1f} {2}'.format(label_name.split('.', 1)[-1], dist, 'm')
+                    p1 = (int(anns[k]['bboxes'][a][0]), int(anns[k]['bboxes'][a][1]))  # Top left
+                    p2 = (int(anns[k]['bboxes'][a][2]), int(anns[k]['bboxes'][a][3]))  # Bottom right
+                    cv2.rectangle(viz, p1, p2, color, 1)
 
-                (retval, baseLine) = cv2.getTextSize(textLabel, font, fontScale, 1)
+                    textLabel = '{0}: {1:3.1f} {2}'.format(label_name.split('.', 1)[-1], dist, 'm')
 
-                textOrg = p1
+                    (retval, baseLine) = cv2.getTextSize(textLabel, font, fontScale, 1)
 
-                cv2.rectangle(viz, (textOrg[0] - 1, textOrg[1] + baseLine - 1),
-                              (textOrg[0] + retval[0] + 1, textOrg[1] - retval[1] - 1), color, -1)
-                cv2.putText(viz, textLabel, textOrg, cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255, 255, 255), 1)
+                    textOrg = p1
 
-        # Visualize data
-        cv2.imshow("Nuscenes Data Visualization", viz)
-        # cv2.imwrite('./ground_truth_selected/' + str(i).zfill(4) +'.png', viz*255)
-        key = cv2.waitKey(0)
-        if key == ord('p'):  # previous image
-            i = i - 1
-        elif key == ord('s'):
-            print("saving image")
-            cv2.imwrite(f"/home/lrdewaal/Pictures/tmp/saved_img_{i}.png", viz)
-        elif key == ord('n'):
-            print("%c -> jump to next scene" % key)
-            i = i + 40
-        elif key == ord('m'):
-            print("%c -> jump to previous scene" % key)
-            i = i - 40
-        elif key == ord('q'):
-            break
+                    cv2.rectangle(viz, (textOrg[0] - 1, textOrg[1] + baseLine - 1),
+                                  (textOrg[0] + retval[0] + 1, textOrg[1] - retval[1] - 1), color, -1)
+                    cv2.putText(viz, textLabel, textOrg, cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255, 255, 255), 1)
+
+        if visual:
+            # Visualize data
+            cv2.imshow("Nuscenes Data Visualization", viz)
+            # cv2.imwrite('./ground_truth_selected/' + str(i).zfill(4) +'.png', viz*255)
+            key = cv2.waitKey(0)
+            if key == ord('p'):  # previous image
+                i = i - 1
+            elif key == ord('s'):
+                print("saving image")
+                cv2.imwrite(f"{os.path.expanduser('~')}/Pictures/tmp/saved_img_{i}.png", viz)
+            elif key == ord('n'):
+                print("%c -> jump to next scene" % key)
+                i = i + 40
+            elif key == ord('m'):
+                print("%c -> jump to previous scene" % key)
+                i = i - 40
+            elif key == ord('q'):
+                break
+            else:
+                i = i + 1
         else:
-            i = i + 1
-        i += 1
-        i = max(i, 0)
+            i += 1
 
+        i = max(i, 0)

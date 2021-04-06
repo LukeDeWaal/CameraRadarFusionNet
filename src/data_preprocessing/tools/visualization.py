@@ -17,7 +17,7 @@ limitations under the License.
 import cv2
 import numpy as np
 
-from colors import label_color, tum_colors
+from .colors import label_color, tum_colors
 import pprint
 
 

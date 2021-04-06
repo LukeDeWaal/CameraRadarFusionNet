@@ -5,8 +5,8 @@ Original Source: https://github.com/fizyr/keras-retinanet
 
 import numpy as np
 
-from anchor_parameters import AnchorParameters
-from anchor_calc import compute_overlap
+from .anchor_parameters import AnchorParameters
+from .compute_overlap import compute_overlap
 
 
 def layer_shapes(image_shape, model):

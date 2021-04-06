@@ -9,7 +9,7 @@ Original Source: https://github.com/fizyr/keras-retinanet
 import numpy as np
 
 #from .anchor import bbox_transform
-from compute_overlap import *
+from .compute_overlap import *
 
 
 def bbox_transform(anchors, gt_boxes, mean=None, std=None):
@@ -69,6 +69,7 @@ def anchor_targets_bbox(
     Returns
         labels_batch: batch that contains labels & anchor states (np.array of shape (batch_size, N, num_classes + 1),
                       where N is the number of anchors for an image and the last column defines the anchor state (-1 for ignore, 0 for bg, 1 for fg).
+
         regression_batch: batch that contains bounding-box regression targets for an image & anchor states (np.array of shape (batch_size, N, 4 + 1),
                       where N is the number of anchors for an image, the first 4 columns define regression targets for (x1, y1, x2, y2) and the
                       last column defines anchor states (-1 for ignore, 0 for bg, 1 for fg).
