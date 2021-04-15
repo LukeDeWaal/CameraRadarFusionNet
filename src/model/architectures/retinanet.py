@@ -1,8 +1,3 @@
-# import tensorflow.keras as keras
-# from crfnet.model import initializers
-# from .. import layers
-# from . import assert_training_model
-
 import torch
 import math
 
@@ -23,7 +18,7 @@ def build_pyramid(models, features):
     x = []
     for model in models:
         output = tuple(model(f) for f in features)
-        output = torch.cat(output, dim=0)
+        output = torch.cat(output, dim=1)
         x.append(output)
     return x
 
@@ -68,7 +63,8 @@ class Classification_Model(torch.nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = torch.reshape(x, (-1, self.num_classes))
+        x.permute(0, 2, 3, 1)
+        x = torch.reshape(x, (x.shape[0], -1, self.num_classes))
         return x
 
 
@@ -110,7 +106,8 @@ class Regression_Model(torch.nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = torch.reshape(x, (-1, self.num_values))
+        x = x.permute(0, 2, 3, 1)
+        x = torch.reshape(x, (x.shape[0], -1, self.num_values))
         return x
 
 
@@ -163,7 +160,7 @@ class Create_Pyramid_Features(torch.nn.Module):
                    padding="same"),
             torch.nn.Upsample(size=self.output_sizes[-2], mode='nearest'),
             Conv2D(in_channels=self.feature_size, out_channels=self.feature_size, kernel_size=3, stride=1,
-                   padding="same"),
+                   padding="same")
         ])
         self.P4_layers = torch.nn.ModuleList([
             Conv2D(in_channels=self.vgg_channels[-2], out_channels=self.feature_size, kernel_size=1, stride=1,
@@ -229,6 +226,7 @@ class Retinanet(torch.nn.Module):
                  num_anchors=None,
                  submodels=None,
                  distance=False,
+                 radar=True,
                  cfg=None):
         """ Construct a RetinaNet model on top of a backbone.
         This model is the minimum model necessary for training (with the unfortunate exception of anchors as output).
@@ -251,13 +249,12 @@ class Retinanet(torch.nn.Module):
         super(Retinanet, self).__init__()
         self.cfg = cfg
         self.submodels = submodels
-        self.pyramid_features = Create_Pyramid_Features(cfg=self.cfg)
+        self.pyramid_features = Create_Pyramid_Features(radar=radar,cfg=self.cfg)
 
         if num_anchors is None:
             num_anchors = AnchorParameters.default.num_anchors()
         if self.submodels is None:
             self.submodels = default_submodels(num_classes, num_anchors, distance)
-
 
     def forward(self, backbone_outputs, radar_outputs):
         # compute pyramid features as per https://arxiv.org/abs/1708.02002

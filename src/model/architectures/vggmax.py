@@ -83,15 +83,13 @@ class Linear(torch.nn.Module):
 
 
 class MaxPool2D(torch.nn.Module):
-    def __init__(self, kernel_size: tuple, stride: str or bool, padding: str or bool = None):
+    def __init__(self, kernel_size: tuple, stride: str or bool):
         super(MaxPool2D, self).__init__()
         self.kernel_size = kernel_size
-        self.padding = padding
         self.stride = stride
-        self.maxpool2D = torch.nn.MaxPool2d(kernel_size=kernel_size, stride=stride)
+        self.maxpool2D = torch.nn.MaxPool2d(kernel_size=kernel_size, stride=stride, ceil_mode=True)
 
     def forward(self, x):
-        x = pad(x, self.padding, self.kernel_size, self.stride)
         x = self.maxpool2D(x)
         return x
 
@@ -115,7 +113,7 @@ class VGGblock(torch.nn.Module):
         if self.cfg.pooling == "maxmin":
             self.Pooling = Lambda(MinMaxPool2D)
         else:
-            self.Pooling = torch.nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
+            self.Pooling = torch.nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2), ceil_mode=True)
 
         # Radar
         if len(self.cfg.channels) > 3:
@@ -236,33 +234,25 @@ class VGGmax(torch.nn.Module):
                         p = self.classifier_in_features - pretrained_state[classifier_key].shape[1]
                         classifier_data = torch.cat((pretrained_state[classifier_key], layer_data[:, -p:]), 1)
                     rsetattr(self, model_key + '.data', classifier_data)
-        elif weights is not None:
-            try:
-                self.load_state_dict(torch.load(weights))
-            except FileNotFoundError:
-                print(f"File {weights} does not Exist")
 
         if "fpn" in self.cfg.network:
             if self.cfg.pooling == "min":
                 self.radar_6 = Lambda(MinPool2D)
                 self.radar_7 = Lambda(MinPool2D)
             if self.cfg.pooling == "conv":
-                radar_height_6, radar_width_6 = output_size(self.cfg.image_size, self.blocks)
-                in_features_6 = radar_height_6*radar_width_6*2
-                self.radar_6 = Conv2D(in_channels=in_features_6, out_channels=64*self.cfg.network_width, kernel_size=(3, 3),
+                self.radar_6 = Conv2D(in_channels=2, out_channels=64*self.cfg.network_width, kernel_size=(3, 3),
                                       padding='same', stride=(2, 2))
-                radar_height_7, radar_width_7 = output_size(self.cfg.image_size, self.blocks+1)
-                in_features_7 = radar_width_7*radar_height_7*64
-                self.radar_7 = Conv2D(in_channels=in_features_7, out_channels=64 * self.cfg.network_width,
+                self.radar_7 = Conv2D(in_channels=2, out_channels=64 * self.cfg.network_width,
                                       kernel_size=(3, 3),
                                       padding='same', stride=(2, 2))
             else:
-                self.radar_6 = MaxPool2D(kernel_size=(2, 2), stride=(2, 2), padding="same")
-                self.radar_7 = MaxPool2D(kernel_size=(2, 2), stride=(2, 2), padding="same")
+                self.radar_6 = MaxPool2D(kernel_size=(2, 2), stride=(2, 2))
+                self.radar_7 = MaxPool2D(kernel_size=(2, 2), stride=(2, 2))
 
     def forward(self, x):
         # Block 0 - Fusion
         if len(self.cfg.channels) > 3:
+            x = x.permute(0, 3, 1, 2)
             image_input = x[:, :3, :, :]
             radar_input = x[:, 3:, :, :]
             if 0 in self.cfg.fusion_blocks:

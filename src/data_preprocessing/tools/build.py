@@ -29,6 +29,6 @@ setup(
     include_dirs=[numpy.get_include()]
 )
 
-direc = 'build/lib.linux-x86_64-3.7/src/data_preprocessing'
+direc = 'build/lib.linux-x86_64-3.7/src/data_preprocessing/tools'
 for file in os.listdir(direc):
     copyfile(os.path.join(direc, file), os.path.join(os.path.dirname(__file__), file))

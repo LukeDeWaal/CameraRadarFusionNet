@@ -22,9 +22,11 @@ def get_config(config_file):
             self.git_commit = commit
             self.git_branch = branch
 
-            self.project_path = pathlib.Path(os.getcwd()).parent.parent.parent
-            self.save_model = pathlib.Path.joinpath(self.project_path, config['PATH']['save_model'])
-            self.load_model = pathlib.Path.joinpath(self.project_path, config['PATH']['load_model'])
+            self.project_path = pathlib.Path(os.getcwd())
+            if config['PATH']['save_model']:
+                self.save_model = pathlib.Path.joinpath(self.project_path, config['PATH']['save_model'])
+            if config['PATH']['load_model']:
+                self.load_model = pathlib.Path.joinpath(self.project_path, config['PATH']['load_model'])
 
             self.tensorboard = config.getboolean('TENSORBOARD', 'tensorboard')
             self.tb_logdir = config['TENSORBOARD']['logdir']
@@ -215,7 +217,7 @@ def get_config(config_file):
             except:
                 self.seed = 0
             try:
-                self.vgg_channels = ast.literal_eval(config.get('CRF-Net','vgg_channels'))
+                self.vgg_channels = ast.literal_eval(config.get('CRF-Net', 'vgg_channels'))
             except:
                 self.vgg_channels = None
 

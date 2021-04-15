@@ -67,7 +67,7 @@ def output_size(x, blocks):
     else:
         height, width = x[-2], x[-1]
     for i in range(blocks):
-        height, width = math.floor(height / 2), math.floor(width / 2)
+        height, width = math.ceil(height / 2), math.ceil(width / 2)
     return height, width
 
 

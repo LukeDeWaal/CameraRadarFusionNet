@@ -1,6 +1,7 @@
-
 cimport cython
+cimport numpy as np
 import numpy as np
+
 np.import_array()
 from numpy cimport ndarray as arr
 from cython.view cimport array as cvarray

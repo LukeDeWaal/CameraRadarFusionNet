@@ -2,6 +2,9 @@ import sys, os, getpass
 
 from config import get_config
 
+import sys
+sys.path.extend(['/home/mauro/Desktop/CameraRadarFusionNet/src'])
+
 ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 LOC_MINI_DIR = os.path.join(ROOT_DIR, 'data', 'mini')
 MODEL_DIR = os.path.join(ROOT_DIR, 'models')

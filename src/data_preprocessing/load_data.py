@@ -6,7 +6,7 @@ import cv2
 from typing import Union
 import random
 import time as tm
-from nuscenes.utils.data_classes import Box
+from nuscenes_devkit.nuscenes.utils.data_classes import Box
 from torch.utils.data import Dataset
 from data_preprocessing.tools.visualization import draw_boxes
 
@@ -215,8 +215,8 @@ class NuscenesDataset(Dataset):
         t2 = tm.time()
         dt = t2-t1
         #if self.verbose: print(f"Data Item Retrieval: {t2-t1} s")
-        if self.timer:
-            print(round(dt, 5), "[s]", end='')
+        # if self.timer:
+        #     print(round(dt, 5), "[s]", end='')
 
         return inputs, targets
 

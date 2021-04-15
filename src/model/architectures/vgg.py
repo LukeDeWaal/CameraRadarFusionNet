@@ -4,6 +4,7 @@ try:
     from resources import model_urls
     from vggmax import VGGmax
     from retinanet import Retinanet
+    from defines import *
 except (ModuleNotFoundError, ImportError):
     from .resources import model_urls
     from .vggmax import VGGmax
@@ -43,7 +44,11 @@ class VGGBackbone:
 
 
 class VGG_Retinanet(torch.nn.Module):
-    def __init__(self, num_classes, backbone='vgg-max-fpn', inputs=None, distance=False, cfg=None, **kwargs):
+    def __init__(self, num_classes,
+                 backbone='vgg-max-fpn',
+                 distance=False,
+                 weights=None,
+                 cfg=None, **kwargs):
         """Constructs a Retinanet Model with a VGG Backbone
 
         Args
@@ -57,13 +62,25 @@ class VGG_Retinanet(torch.nn.Module):
 
         super(VGG_Retinanet, self).__init__()
         if "vgg-max" in backbone:
-            self.vgg = VGGmax(include_top=False, weights=None, cfg=cfg)
+            self.vgg = VGGmax(include_top=False, weights="imagenet", cfg=cfg)
         else:
             raise ValueError("Backbone '{}' not supported.".format(backbone))
 
         self.retinanet = Retinanet(num_classes=num_classes, distance=distance, cfg=cfg)
 
+        if weights is not None:
+            try:
+                self.load_state_dict(torch.load(weights))
+            except FileNotFoundError:
+                print(f"File {weights} does not Exist")
+
     def forward(self, x):
         backbone_outputs, radar_outputs = self.vgg(x)
         outputs = self.retinanet(backbone_outputs=backbone_outputs, radar_outputs=radar_outputs)
         return outputs
+
+if __name__ == "__main__":
+    height, width = cfg.image_size
+    x = torch.rand(10, height, width, 5)
+    model = VGG_Retinanet(num_classes=8, backbone=cfg.network, weights=None, include_top=False, cfg=cfg)
+    output = model(x)
